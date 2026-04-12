@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SophiaPath | Hoş Geldin</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+
+    <div id="splash-screen" class="screen active">
+        <div class="logo-container">
+            <i class="fa-solid fa-brain logo-icon"></i>
+            <h1>SophiaPath</h1>
+            <p class="slogan">Düşünce Dünyasına Hoş Geldin</p>
+        </div>
+        
+        <div class="device-selection">
+            <h3>Deneyimini Seç</h3>
+            <div class="device-buttons">
+                <button id="btn-pc" class="device-btn">
+                    <i class="fa-solid fa-desktop"></i> PC
+                </button>
+                <button id="btn-mobile" class="device-btn">
+                    <i class="fa-solid fa-mobile-screen"></i> Mobil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-screen" class="screen hidden">
+        <div class="auth-box">
+            <div class="auth-header">
+                <i class="fa-solid fa-brain logo-icon-small"></i>
+                <h2 id="auth-title">Giriş Yap</h2>
+            </div>
+
+            <form id="login-form" class="auth-form active-form">
+                <input type="email" id="login-email" placeholder="E-posta" required>
+                <input type="password" id="login-password" placeholder="Şifre" required>
+                <button type="submit" class="primary-btn">Giriş Yap</button>
+                <p class="switch-text">Henüz üye değil misin? <span id="to-register">Kayıt Ol</span></p>
+            </form>
+
+            <form id="register-form" class="auth-form hidden-form">
+                <input type="text" id="reg-username" placeholder="Kullanıcı Adı" required>
+                <input type="email" id="reg-email" placeholder="E-posta" required>
+                <input type="password" id="reg-password" placeholder="Şifre" required>
+                <button type="submit" class="primary-btn">Aramıza Katıl</button>
+                <p class="switch-text">Zaten hesabın var mı? <span id="to-login">Giriş Yap</span></p>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+</body>
+</html>

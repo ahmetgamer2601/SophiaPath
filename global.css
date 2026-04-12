@@ -1,0 +1,54 @@
+/* Yazı tipi olarak Inter kullanıyoruz, Spotify havası verir */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap');
+
+:root {
+    --spotify-green: #1DB954;
+    --spotify-black: #121212;
+    --spotify-dark-gray: #181818;
+    --spotify-light-gray: #282828;
+    --text-white: #FFFFFF;
+    --text-muted: #B3B3B3;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --transition-fast: 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--spotify-black);
+    color: var(--text-white);
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Ekran Geçiş Efektleri */
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.95);
+}
+
+.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
