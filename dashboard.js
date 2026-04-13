@@ -8,7 +8,9 @@ import {
 // --- GLOBAL DEĞİŞKENLER ---
 let currentUserData = null;
 
-// --- 1. OTURUM VE KULLANICI VERİLERİ ---
+// ==========================================
+// 1. OTURUM VE KULLANICI VERİLERİ (BAŞLATICI)
+// ==========================================
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         try {
@@ -36,21 +38,22 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// --- ARAYÜZ VE NAVİGASYON MOTORU ---
-
+// ==========================================
+// 2. ARAYÜZ (UI) VE NAVİGASYON MOTORU
+// ==========================================
 function setupUI() {
     if (!currentUserData) return; 
 
     const { username, role, level, points } = currentUserData;
 
-    // 1. Kullanıcı Bilgilerini Yazdır
+    // 1. Kullanıcı Bilgilerini Yazdır (Hero Alanı ve Üst Bar)
     const displayNames = ['topUsername', 'heroName', 'displayUsername'];
     displayNames.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = username;
     });
     
-    // 2. Puan ve Rütbe Güncelleme
+    // 2. Puan ve Rütbe Güncelleme (Stat Kutuları)
     const arenaPointsDisplay = document.querySelector('.stat-box .text-yellow')?.parentElement?.querySelector('.stat-value');
     if (arenaPointsDisplay) {
         arenaPointsDisplay.innerText = points || 0;
@@ -59,29 +62,30 @@ function setupUI() {
     const rankElement = document.getElementById('topRank');
     if (rankElement) rankElement.innerText = level || "Epistemon";
 
-    // 3. Admin Kontrolü
+    // 3. Admin Kontrolü (Yetkisi varsa yönetim panelini aç)
     if (role === "admin") {
         document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
     }
 
-    // 4. Navigasyonu Başlat
+    // 4. Navigasyon Sistemini Kur (Çakışmalar giderildi)
     setupNavigation();
 }
 
 function setupNavigation() {
-    const navButtons = document.querySelectorAll('.nav-btn');
+    // Hem PC (nav-btn), hem alt menü (sub-btn), hem mobil (dock-item) butonlarını seç
+    const allNavButtons = document.querySelectorAll('.nav-btn, .sub-btn, .dock-item');
     const sections = document.querySelectorAll('.page-section');
 
-    navButtons.forEach(btn => {
-        // .onclick kullanımı mevcut eski olayları temizler ve çakışmayı önler
+    allNavButtons.forEach(btn => {
         btn.onclick = () => {
             const targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
 
             // Aktif buton stilini değiştir
-            navButtons.forEach(b => b.classList.remove('active'));
+            allNavButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Sayfaları değiştir
+            // Sayfaları değiştir (İlgili section'ı göster, diğerlerini gizle)
             sections.forEach(section => {
                 section.classList.add('hidden');
                 if (section.id === targetId) {
@@ -89,39 +93,25 @@ function setupNavigation() {
                 }
             });
 
-            // Koleksiyon tıklandıysa motoru çalıştır
+            // Koleksiyon sekmesi tıklandıysa motoru çalıştır ve kartları diz
             if (targetId === 'collection-section') {
                 if (typeof renderCollection === "function") {
                     renderCollection();
                 }
             }
+            
+            // Mobilde menü tıklandığında profil menüsü açıksa otomatik kapat
+            const profileMenu = document.getElementById('profileMenu');
+            if (profileMenu) profileMenu.classList.add('hidden');
         };
     });
 }
 
-// --- 2. NAVİGASYON KONTROLLERİ (PC & MOBİL) ---
-const allNavButtons = document.querySelectorAll('.nav-btn, .sub-btn, .dock-item');
-const allSections = document.querySelectorAll('.page-section');
+// ==========================================
+// 3. YAN MENÜ VE PROFİL ETKİLEŞİMLERİ
+// ==========================================
 
-allNavButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const target = btn.getAttribute('data-target');
-        if (!target) return;
-
-        // Sayfa Değiştir
-        allSections.forEach(sec => sec.classList.add('hidden'));
-        document.getElementById(target).classList.remove('hidden');
-
-        // Aktif Buton Stilini Güncelle
-        allNavButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Mobilde menü tıklandığında profil menüsü açıksa kapat
-        document.getElementById('profileMenu').classList.add('hidden');
-    });
-});
-
-// Yan Menü Dropdown (Öğrenme Odaları)
+// Yan Menü Dropdown (Öğrenme Odaları Aç/Kapat)
 const learningToggle = document.getElementById('learningToggle');
 if (learningToggle) {
     learningToggle.addEventListener('click', () => {
@@ -129,7 +119,7 @@ if (learningToggle) {
     });
 }
 
-// Profil Menüsü (Açılır/Kapanır)
+// Profil Menüsü Kapsülü (Açılır/Kapanır)
 const profileTrigger = document.getElementById('profileTrigger');
 const profileMenu = document.getElementById('profileMenu');
 
@@ -140,20 +130,22 @@ if (profileTrigger) {
     });
 }
 
-// Ekranda herhangi bir yere tıklandığında menüleri kapat
+// Ekranda herhangi bir yere tıklandığında menüleri temizle
 document.addEventListener('click', () => {
-    profileMenu.classList.add('hidden');
+    if (profileMenu) profileMenu.classList.add('hidden');
 });
 
 // ==========================================
-// KARTLARI VE ZAMAN AKIŞINI GETİREN FONKSİYON
+// 4. VERİ ÇEKME MOTORLARI (KARTLAR VE LİDERLİK)
 // ==========================================
+
 function initDataListeners() {
     const phiGrid = document.getElementById('phiGrid');
     const timelineWrapper = document.getElementById('timelineWrapper');
     
-    if (!phiGrid) return; // Hata almamak için güvenlik kontrolü
+    if (!phiGrid) return; 
 
+    // Filozofları yıla göre sıralayarak çek
     const phiQuery = query(collection(db, "philosophers"), orderBy("phiYear", "asc"));
 
     onSnapshot(phiQuery, (snapshot) => {
@@ -184,7 +176,7 @@ function initDataListeners() {
             `;
             phiGrid.appendChild(card);
 
-            // ZAMAN AKIŞINI DOLDUR
+            // ZAMAN AKIŞINI DOLDUR (Timeline)
             if(timelineWrapper) {
                 const tlItem = document.createElement('div');
                 tlItem.className = "timeline-item";
@@ -199,12 +191,9 @@ function initDataListeners() {
     });
 }
 
-// ==========================================
-// CANLI LİDERLİK TABLOSUNU GETİREN FONKSİYON
-// ==========================================
 function initLeaderboard() {
     const leaderboardBody = document.getElementById('leaderboardBody');
-    if (!leaderboardBody) return; // Tablo HTML'de yoksa hata verme
+    if (!leaderboardBody) return; 
 
     try {
         // En yüksek puanı olan ilk 10 kişiyi getir
@@ -242,15 +231,18 @@ function initLeaderboard() {
             });
         }, (error) => {
             console.error("Liderlik tablosu hatası:", error);
-            leaderboardBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Tablo yüklenemedi. İndeks hatası olabilir (Konsola bak).</td></tr>`;
+            leaderboardBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Tablo yüklenemedi.</td></tr>`;
         });
     } catch (err) {
         console.error("Liderlik tablosu başlatılamadı:", err);
     }
 }
-// --- 4. FONKSİYONLAR (PENCERELER VE İŞLEMLER) ---
 
-// Filozof Detayını Görüntüle
+// ==========================================
+// 5. MODALLAR VE ADMİN İŞLEMLERİ
+// ==========================================
+
+// Filozof Detayını (Okuma Penceresini) Aç
 window.viewPhilosopher = async (id) => {
     try {
         const docSnap = await getDoc(doc(db, "philosophers", id));
@@ -274,7 +266,7 @@ window.viewPhilosopher = async (id) => {
     }
 };
 
-// Filozof Sil (Sadece Admin)
+// Filozof Sil (Sadece Admin Yetkisine Sahip Kişiler İçin)
 window.deletePhilosopher = async (id) => {
     if (confirm("Bu düşünürü tarihin tozlu sayfalarına gömmek istediğine emin misin? (SİLİNECEK)")) {
         try {
@@ -285,13 +277,13 @@ window.deletePhilosopher = async (id) => {
     }
 };
 
-// Yeni Filozof Kaydet
+// Yeni Filozof Kaydetme Form İşlemi (Admin)
 const addPhiForm = document.getElementById('addPhiForm');
 if (addPhiForm) {
     addPhiForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Formdan verileri ve nadirlik seçimini alıyoruz
+        // Formdan verileri al
         const newPhi = {
             phiName: document.getElementById('phiName').value,
             phiEra: document.getElementById('phiEra').value,
@@ -299,15 +291,15 @@ if (addPhiForm) {
             phiImg: document.getElementById('phiImg').value || "https://images.unsplash.com/photo-1549813067-14a044b755ee?q=80&w=500",
             phiThought: document.getElementById('phiThought').value,
             phiQuote: document.getElementById('phiQuote').value,
-            phiRarity: document.getElementById('phiRarity').value, // <-- İŞTE BURASI! Nadirlik değerini ekledik.
+            phiRarity: document.getElementById('phiRarity').value || "common", 
             createdAt: new Date()
         };
 
         try {
-            // Firebase'e kaydetme işlemi (Mevcut kodunun devamı)
+            // Firebase'e kaydet
             await addDoc(collection(db, "philosophers"), newPhi);
             
-            // Başarılı ise formu temizle ve kapat
+            // Başarılıysa formu temizle ve kapat
             addPhiForm.reset();
             closeModal('adminModal');
             alert("Filozof başarıyla sisteme ve koleksiyon havuzuna eklendi!");
@@ -317,22 +309,26 @@ if (addPhiForm) {
         }
     });
 }
-// --- 5. YARDIMCI FONKSİYONLAR ---
+
+// Yardımcı Pencere (Modal) Fonksiyonları
 window.openModal = (id) => {
-    document.getElementById(id).style.display = 'flex';
+    const modal = document.getElementById(id);
+    if(modal) modal.style.display = 'flex';
 };
 
 window.closeModal = (id) => {
-    document.getElementById(id).style.display = 'none';
+    const modal = document.getElementById(id);
+    if(modal) modal.style.display = 'none';
 };
 
-// Çıkış Yap
-document.getElementById('logoutBtn').addEventListener('click', () => {
+// Çıkış Yap Butonu
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
     signOut(auth);
 });
 
-
-// --- ARENA SİSTEMİ (GÜNCELLENMİŞ FULL VERSİYON) ---
+// ==========================================
+// 6. ARENA SİSTEMİ (ZİHİNSEL DÜELLO MANTIĞI)
+// ==========================================
 let currentQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
@@ -344,11 +340,12 @@ const lobby = document.getElementById('arena-lobby');
 const battle = document.getElementById('arena-battle');
 const result = document.getElementById('arena-result');
 
-findMatchBtn.addEventListener('click', startSearch);
+if (findMatchBtn) {
+    findMatchBtn.addEventListener('click', startSearch);
+}
 
-// 1. SORU HAVUZU VE YÜKLEME
+// Kod İçindeki Soru Havuzu
 function loadQuestionsFromCode() {
-    // Buraya istediğin kadar soru ekleyebilirsin, Firebase ile uğraşmana gerek kalmaz.
     const allQuestions = [
         { q: "Sokrates'in en ünlü öğrencisi kimdir?", o: ["Aristoteles", "Platon", "Epikür", "Zeno"], a: "Platon" },
         { q: "'Bildiğim tek şey, hiçbir şey bilmediğimdir' kime aittir?", o: ["Sokrates", "Descartes", "Kant", "Nietzsche"], a: "Sokrates" },
@@ -356,42 +353,35 @@ function loadQuestionsFromCode() {
         { q: "Aristoteles'e göre 'Erdem' nerede bulunur?", o: ["Uç noktalarda", "Altın ortada", "Sadece fikirlerde", "Tanrı katında"], a: "Altın ortada" },
         { q: "Varoluşçuluk akımının en önemli temsilcilerinden biri?", o: ["Jean-Paul Sartre", "Thomas Hobbes", "John Locke", "David Hume"], a: "Jean-Paul Sartre" },
         { q: "Mağara Alegorisi hangi filozofa aittir?", o: ["Aristoteles", "Platon", "Sokrates", "Farabi"], a: "Platon" },
-    { q: "İnsan doğasını 'Tabula Rasa' (Boş Levha) olarak tanımlayan kimdir?", o: ["John Locke", "Thomas Hobbes", "Kant", "Descartes"], a: "John Locke" },
-    { q: "Devlet için 'Leviathan' benzetmesini yapan düşünür hangisidir?", o: ["Rousseau", "Machiavelli", "Thomas Hobbes", "Marx"], a: "Thomas Hobbes" },
-    { q: "Ahlak felsefesinde 'Ödev Ahlakı' ve 'Kategorik İmperatif' kime aittir?", o: ["Nietzsche", "Spinoza", "Kant", "Mill"], a: "Kant" },
-    { q: "İslam dünyasında 'Muallim-i Sani' (İkinci Öğretmen) kimdir?", o: ["Gazali", "Farabi", "İbn-i Sina", "İbn-i Rüşd"], a: "Farabi" },
-    { q: "İbn-i Sina'nın ruhun bedenden ayrı olduğunu kanıtladığı deneyin adı nedir?", o: ["Mağara Deneyi", "Uçan Adam", "Gemi Deneyi", "Kedi Deneyi"], a: "Uçan Adam" },
-    { q: "'Varoluş özden önce gelir' diyerek varoluşçuluğu özetleyen kimdir?", o: ["Albert Camus", "Sartre", "Heidegger", "Kierkegaard"], a: "Sartre" },
-    { q: "Sokrates'in bilgiyi sorularla ortaya çıkarma yöntemine ne ad verilir?", o: ["Diyalektik", "Maiyutik (Doğurtma)", "Arke", "Paradigma"], a: "Maiyutik (Doğurtma)" },
-    { q: "Bilimin 'Paradigma' değişimleriyle ilerlediğini savunan bilim filozofu?", o: ["Karl Popper", "Thomas Kuhn", "Newton", "Francis Bacon"], a: "Thomas Kuhn" },
-    { q: "Panteist bir anlayışla 'Tanrı ya da Doğa' diyen filozof hangisidir?", o: ["Spinoza", "Descartes", "Hegel", "Leibniz"], a: "Spinoza" },
-    { q: "Sisifos Söyleni eseriyle 'Absürdizm'i anlatan yazar-filozof?", o: ["Sartre", "Nietzsche", "Albert Camus", "Kafka"], a: "Albert Camus" },
-    { q: "Aristoteles'e göre erdemli yaşamın anahtarı olan denge durumu nedir?", o: ["Mutlak İyi", "Altın Orta", "Nirvana", "Ataraxia"], a: "Altın Orta" },
-    { q: "Modern felsefenin kurucusu sayılan 'Şüpheci' düşünür kimdir?", o: ["David Hume", "Descartes", "Kant", "Locke"], a: "Descartes" },
-    { q: "Gazali'nin filozofları eleştirdiği meşhur eserinin adı nedir?", o: ["El-Kanun", "Medinetü'l Fazıla", "Tehâfütü'l-Felâsife", "İhya"], a: "Tehâfütü'l-Felâsife" }
+        { q: "İnsan doğasını 'Tabula Rasa' (Boş Levha) olarak tanımlayan kimdir?", o: ["John Locke", "Thomas Hobbes", "Kant", "Descartes"], a: "John Locke" },
+        { q: "Devlet için 'Leviathan' benzetmesini yapan düşünür hangisidir?", o: ["Rousseau", "Machiavelli", "Thomas Hobbes", "Marx"], a: "Thomas Hobbes" },
+        { q: "Ahlak felsefesinde 'Ödev Ahlakı' ve 'Kategorik İmperatif' kime aittir?", o: ["Nietzsche", "Spinoza", "Kant", "Mill"], a: "Kant" },
+        { q: "İslam dünyasında 'Muallim-i Sani' (İkinci Öğretmen) kimdir?", o: ["Gazali", "Farabi", "İbn-i Sina", "İbn-i Rüşd"], a: "Farabi" },
+        { q: "İbn-i Sina'nın ruhun bedenden ayrı olduğunu kanıtladığı deneyin adı nedir?", o: ["Mağara Deneyi", "Uçan Adam", "Gemi Deneyi", "Kedi Deneyi"], a: "Uçan Adam" },
+        { q: "'Varoluş özden önce gelir' diyerek varoluşçuluğu özetleyen kimdir?", o: ["Albert Camus", "Sartre", "Heidegger", "Kierkegaard"], a: "Sartre" },
+        { q: "Sokrates'in bilgiyi sorularla ortaya çıkarma yöntemine ne ad verilir?", o: ["Diyalektik", "Maiyutik (Doğurtma)", "Arke", "Paradigma"], a: "Maiyutik (Doğurtma)" },
+        { q: "Bilimin 'Paradigma' değişimleriyle ilerlediğini savunan bilim filozofu?", o: ["Karl Popper", "Thomas Kuhn", "Newton", "Francis Bacon"], a: "Thomas Kuhn" },
+        { q: "Panteist bir anlayışla 'Tanrı ya da Doğa' diyen filozof hangisidir?", o: ["Spinoza", "Descartes", "Hegel", "Leibniz"], a: "Spinoza" },
+        { q: "Sisifos Söyleni eseriyle 'Absürdizm'i anlatan yazar-filozof?", o: ["Sartre", "Nietzsche", "Albert Camus", "Kafka"], a: "Albert Camus" },
+        { q: "Aristoteles'e göre erdemli yaşamın anahtarı olan denge durumu nedir?", o: ["Mutlak İyi", "Altın Orta", "Nirvana", "Ataraxia"], a: "Altın Orta" },
+        { q: "Modern felsefenin kurucusu sayılan 'Şüpheci' düşünür kimdir?", o: ["David Hume", "Descartes", "Kant", "Locke"], a: "Descartes" },
+        { q: "Gazali'nin filozofları eleştirdiği meşhur eserinin adı nedir?", o: ["El-Kanun", "Medinetü'l Fazıla", "Tehâfütü'l-Felâsife", "İhya"], a: "Tehâfütü'l-Felâsife" }
     ];
-
-    // Soruları karıştır ve içinden 5 tanesini seç
     return allQuestions.sort(() => Math.random() - 0.5).slice(0, 5);
 }
 
-// 2. ARAMA VE BAŞLATMA
 async function startSearch() {
     findMatchBtn.innerText = "Düello Hazırlanıyor...";
     findMatchBtn.disabled = true;
 
-    // UX için kısa bir bekleme süresi
     setTimeout(() => {
-        // Soruları kod içindeki havuzdan çekiyoruz
         currentQuestions = loadQuestionsFromCode();
-        
         lobby.classList.add('hidden');
         battle.classList.remove('hidden');
         showQuestion();
     }, 1500);
 }
 
-// 3. SORUYU EKRANA BASMA
 function showQuestion() {
     if (currentQuestionIndex >= currentQuestions.length) {
         endBattle();
@@ -416,7 +406,6 @@ function showQuestion() {
     startTimer();
 }
 
-// 4. CEVAP KONTROL VE ZAMANLAYICI
 function startTimer() {
     timeLeft = 15;
     const bar = document.getElementById('timerProgress');
@@ -442,7 +431,7 @@ function checkAnswer(selected, correct, btn) {
 
     if (selected === correct) {
         btn.classList.add('correct');
-        score += 10 + timeLeft; // Doğru cevap + kalan süre puanı
+        score += 10 + timeLeft; 
     } else {
         btn.classList.add('wrong');
     }
@@ -455,20 +444,16 @@ function nextQuestion() {
     showQuestion();
 }
 
-// 5. BİTİŞ VE PUANI FİREBASE'E KAYDETME
 async function endBattle() {
     battle.classList.add('hidden');
     result.classList.remove('hidden');
     document.getElementById('resultMsg').innerText = `Tebrikler! Toplam ${score} Arena Puanı kazandın.`;
     
-    // Firebase güncellemesi
+    // Veritabanına Skoru Ekle
     if (auth.currentUser) {
         const userRef = doc(db, "users", auth.currentUser.uid);
         try {
-            await updateDoc(userRef, {
-                points: increment(score) // Mevcut puanın üzerine ekler
-            });
-            console.log("Puan başarıyla Firebase'e işlendi.");
+            await updateDoc(userRef, { points: increment(score) });
         } catch (e) {
             console.error("Puan kaydedilemedi:", e);
         }
@@ -484,15 +469,8 @@ window.resetArena = () => {
     score = 0;
 };
 
-// JS dosyasının en altına, her şeyin dışına ekle:
-window.addEventListener('DOMContentLoaded', () => {
-    initDataListeners();
-    initLeaderboard();
-});
-
-
 // ==========================================
-// KİMİN SÖZÜ? OYUN MOTORU (VİP TASARIM)
+// 7. KİMİN SÖZÜ? OYUN MOTORU (VIP TASARIM)
 // ==========================================
 let quoteGameData = {
     philosophers: [],
@@ -502,12 +480,10 @@ let quoteGameData = {
     timeLeft: 10
 };
 
-// Modül içinde fonksiyonun HTML'den tetiklenebilmesi için window'a ekledik
 window.startQuoteGame = async () => {
     const lobby = document.getElementById('arena-lobby');
     const quoteArena = document.getElementById('quote-game-arena');
 
-    // Lobi gizle, Oyun sahasını aç
     lobby.classList.add('hidden');
     quoteArena.classList.remove('hidden');
     quoteArena.innerHTML = `<h2 style="padding: 40px; color: var(--text-dim);">Filozoflar Çağrılıyor...</h2>`;
@@ -527,7 +503,6 @@ window.startQuoteGame = async () => {
 
         quoteGameData.streak = 0;
         
-        // Oyun iskeletini çiz
         quoteArena.innerHTML = `
             <div style="display: flex; justify-content: space-between; margin-bottom: 25px;">
                 <div style="background: var(--green); color: black; padding: 6px 15px; border-radius: 20px; font-weight: bold;">Seri: <span id="quoteStreak">0</span></div>
@@ -549,14 +524,13 @@ window.startQuoteGame = async () => {
 window.handleQuoteAnswer = (selectedName, element) => {
     clearInterval(quoteGameData.timer);
     
-    // Çift tıklamayı önlemek için butonları kilitle
     const allButtons = document.querySelectorAll('#quoteOptionsGrid .option-btn');
     allButtons.forEach(btn => btn.style.pointerEvents = 'none');
     
     if(selectedName === quoteGameData.current.phiName) {
         element.classList.add('correct');
         quoteGameData.streak++;
-        setTimeout(() => renderQuoteRound(), 800); // 0.8sn yeşil yanıp yeni soruya geçer
+        setTimeout(() => renderQuoteRound(), 800); 
     } else {
         element.classList.add('wrong');
         setTimeout(() => finishQuoteGame(`Yanlış! Sözün sahibi: <strong>${quoteGameData.current.phiName}</strong>`), 1000);
@@ -576,7 +550,6 @@ function renderQuoteRound() {
     opts.push(others[0].phiName, others[1].phiName, others[2].phiName);
     opts.sort(() => Math.random() - 0.5);
 
-    // Seçenekleri rekabetçi moddaki buton sınıfıyla (option-btn) bas
     const grid = document.getElementById('quoteOptionsGrid');
     grid.innerHTML = opts.map(o => `
         <button class="option-btn" onclick="handleQuoteAnswer('${o}', this)">${o}</button>
@@ -615,7 +588,6 @@ async function finishQuoteGame(msg) {
         </div>
     `;
 
-    // XP Firebase'e yazdırılıyor
     if(xp > 0 && auth.currentUser) {
         await updateDoc(doc(db, "users", auth.currentUser.uid), {
             points: increment(xp)
@@ -628,69 +600,17 @@ window.resetQuoteGameScreen = () => {
     document.getElementById('arena-lobby').classList.remove('hidden');
 };
 
-
-
-
-// --- KOLEKSİYON SİSTEMİ: KARTLARI LİSTELEME ---
+// ==========================================
+// 8. KOLEKSİYON SİSTEMİ (ÇANTA) MOTORU
+// ==========================================
 async function renderCollection() {
     const collectionGrid = document.getElementById('collection-grid');
-    if (!collectionGrid) return;
-
-    collectionGrid.innerHTML = `<div class="loading-msg">Çanta düzenleniyor...</div>`;
-
-    try {
-        // 1. Tüm filozofları çek (Sıralama yılına göre)
-        const q = query(collection(db, "philosophers"), orderBy("phiYear", "asc"));
-        const snapshot = await getDocs(q);
-        
-        // 2. Kullanıcının envanterini al (Yoksa boş dizi say)
-        const userInventory = currentUserData?.inventory || [];
-
-        let html = "";
-
-        snapshot.forEach(doc => {
-            const phi = doc.data();
-            const rarity = phi.phiRarity || "common";
-            
-            // Kullanıcı bu filozofa sahip mi?
-            const isOwned = userInventory.includes(phi.phiName);
-            
-            // Sahip değilse "locked" sınıfı, sahipse nadirlik sınıfı ekle
-            const statusClass = isOwned ? `card-${rarity}` : "locked";
-
-            html += `
-                <div class="phi-card ${statusClass}" ${isOwned ? `onclick="openReadModal('${doc.id}')"` : ""}>
-                    <div class="card-img-box">
-                        <img src="${phi.phiImg}" alt="${phi.phiName}">
-                        ${!isOwned ? '<div class="lock-overlay"><i class="fa-solid fa-lock"></i></div>' : ""}
-                    </div>
-                    <div class="card-info">
-                        <span class="era-tag">${phi.phiEra}</span>
-                        <h3>${phi.phiName}</h3>
-                        <p>${isOwned ? phi.phiThought.substring(0, 60) + "..." : "??? Bilinmiyor ???"}</p>
-                        <div class="rarity-badge badge-${rarity}">${rarity.toUpperCase()}</div>
-                    </div>
-                </div>
-            `;
-        });
-
-        collectionGrid.innerHTML = html;
-
-    } catch (error) {
-        console.error("Koleksiyon yüklenirken hata:", error);
-        collectionGrid.innerHTML = "Koleksiyon yüklenemedi.";
+    if (!collectionGrid) {
+        console.warn("HTML'de 'collection-grid' id'li bir alan bulunamadı. Koleksiyon sayfası için HTML eksik olabilir.");
+        return; 
     }
-}
 
-
-// dashboard.js dosyanın en altına bunları ekle:
-
-
-async function renderCollection() {
-    const collectionGrid = document.getElementById('collection-grid');
-    if (!collectionGrid) return;
-
-    collectionGrid.innerHTML = `<div class="loading-msg">Çanta düzenleniyor...</div>`;
+    collectionGrid.innerHTML = `<div class="loading-msg" style="text-align:center; padding:50px; color:#aaa;">Çanta düzenleniyor...</div>`;
 
     try {
         const q = query(collection(db, "philosophers"), orderBy("phiYear", "asc"));
@@ -705,15 +625,15 @@ async function renderCollection() {
             const statusClass = isOwned ? `card-${rarity}` : "locked";
 
             html += `
-                <div class="phi-card ${statusClass}" ${isOwned ? `onclick="openReadModal('${docSnap.id}')"` : ""}>
+                <div class="phi-card ${statusClass}" ${isOwned ? `onclick="viewPhilosopher('${docSnap.id}')"` : ""}>
                     <div class="card-img-box">
-                        <img src="${phi.phiImg}" alt="${phi.phiName}">
+                        <img src="${phi.phiImg || 'https://images.unsplash.com/photo-1549813067-14a044b755ee?q=80&w=500'}" alt="${phi.phiName}">
                         ${!isOwned ? '<div class="lock-overlay"><i class="fa-solid fa-lock"></i></div>' : ""}
                     </div>
-                    <div class="card-info">
-                        <span class="era-tag">${phi.phiEra}</span>
-                        <h3>${phi.phiName}</h3>
-                        <p>${isOwned ? (phi.phiThought?.substring(0, 60) + "...") : "??? Bilinmiyor ???"}</p>
+                    <div class="card-info" style="padding:15px; flex-grow:1;">
+                        <span class="era-tag" style="font-size:0.7rem; color:var(--text-dim);">${phi.phiEra}</span>
+                        <h3 style="margin:5px 0;">${phi.phiName}</h3>
+                        <p style="font-size:0.85rem; color:#aaa;">${isOwned ? (phi.phiThought?.substring(0, 60) + "...") : "??? Bilinmiyor ???"}</p>
                         <div class="rarity-badge badge-${rarity}">${rarity.toUpperCase()}</div>
                     </div>
                 </div>`;
@@ -721,8 +641,6 @@ async function renderCollection() {
         collectionGrid.innerHTML = html;
     } catch (error) {
         console.error("Koleksiyon hatası:", error);
-        collectionGrid.innerHTML = "Veriler yüklenemedi.";
+        collectionGrid.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Veriler yüklenemedi.</div>`;
     }
 }
-
-// ÖNEMLİ: setupUI fonksiyonunun en sonuna setupNavigation(); satırını eklemeyi unutma!
