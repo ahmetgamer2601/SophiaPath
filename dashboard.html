@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SophiaPath | Antik Bilgelik ve Dashboard</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -33,6 +33,10 @@
                     <i class="fa-solid fa-box-archive"></i> 
                     <span>Koleksiyon</span>
                 </button>
+                <button class="nav-btn" data-target="leaderboard-section">
+                    <i class="fa-solid fa-trophy"></i> 
+                    <span>Liderlik Tablosu</span>
+                </button>
             </nav>
 
             <div class="user-quick-card">
@@ -46,7 +50,7 @@
             </div>
         </aside>
 
-        <main class="main-viewport">
+        <main class="main-viewport" id="scrollContainer">
             <header class="glass-header">
                 <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -82,12 +86,19 @@
             </section>
 
             <section id="arena-section" class="page-section hidden">
-                <div class="arena-container">
+                <div class="arena-grid">
                     <div id="arena-lobby" class="arena-card">
                         <i class="fa-solid fa-hand-fist arena-icon"></i>
                         <h2>Zihinsel Arena</h2>
                         <p>Diğer gezginlerle fikir düellosuna gir, bilgeliğini kanıtla!</p>
                         <button class="action-btn" id="findMatchBtn">Düello Ara</button>
+                    </div>
+
+                    <div id="test-lobby" class="arena-card">
+                        <i class="fa-solid fa-brain arena-icon" style="color: var(--blue);"></i>
+                        <h2>Bilgelik Testi</h2>
+                        <p>Kendi felsefi seviyeni ölç ve yeni kartlar kazanmaya başla.</p>
+                        <button class="action-btn" style="background: var(--blue);" id="startTestBtn">Teste Başla</button>
                     </div>
                 </div>
             </section>
@@ -95,9 +106,16 @@
             <section id="collection-section" class="page-section hidden">
                 <div class="section-title">
                     <h2>Bilgelik Çantan</h2>
-                    <p>Keşfettiğin filozoflar ve kazandığın kartlar burada listelenir.</p>
+                    <p>Keşfettiğin filozoflar burada saklanır.</p>
                 </div>
-                <div class="phi-grid" id="collectionGrid">
+                <div class="phi-grid" id="collectionGrid"></div>
+            </section>
+
+            <section id="leaderboard-section" class="page-section hidden">
+                <div class="section-title">
+                    <h2>En Bilge Gezginler</h2>
+                </div>
+                <div class="leaderboard-container" id="leaderboardList">
                     </div>
             </section>
         </main>
@@ -108,8 +126,7 @@
             <button class="close-btn float-close" onclick="closeModal('readModal')">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <div id="readContent" class="modal-body">
-                </div>
+            <div id="readContent" class="modal-body"></div>
         </div>
     </div>
 
@@ -132,7 +149,7 @@
                 <textarea id="phiThought" placeholder="Temel Felsefesi..." rows="3" required></textarea>
                 <textarea id="phiQuote" placeholder="Meşhur Sözü..." rows="2"></textarea>
                 <div class="modal-footer">
-                    <button type="submit" class="btn-save">Kaydet</button>
+                    <button type="submit" class="btn-save">Sisteme Kaydet</button>
                 </div>
             </form>
         </div>
