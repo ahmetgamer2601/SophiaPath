@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SophiaPath | Antik Bilgelik</title>
+    <title>SophiaPath | Antik Bilgelik ve Dashboard</title>
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="global.css">
@@ -14,280 +14,127 @@
 <body class="dashboard-body">
 
     <div class="app-layout">
-        
         <aside class="sidebar" id="mainSidebar">
             <div class="brand-logo">
-                <i class="fa-solid fa-building-columns"></i> <span>SophiaPath</span>
+                <i class="fa-solid fa-building-columns"></i> 
+                <span>SophiaPath</span>
             </div>
 
             <nav class="side-nav">
                 <button class="nav-btn active" data-target="home-section">
-                    <i class="fa-solid fa-house"></i> <span>Ana Sayfa</span>
+                    <i class="fa-solid fa-house"></i> 
+                    <span>Ana Sayfa</span>
                 </button>
                 <button class="nav-btn" data-target="arena-section">
-                    <i class="fa-solid fa-shield-halved"></i> <span>Arena (PvP)</span>
+                    <i class="fa-solid fa-shield-halved"></i> 
+                    <span>Arena (PvP)</span>
                 </button>
-                
-                <div class="nav-dropdown-container">
-                    <button class="nav-btn dropdown-toggle" id="learningToggle">
-                        <i class="fa-solid fa-book-open"></i> <span>Öğrenme Odaları</span>
-                        <i class="fa-solid fa-chevron-down arrow-icon"></i>
-                    </button>
-                    <div class="nav-submenu" id="learningSubmenu">
-                        <button class="sub-btn" data-target="cards-section">
-                            <i class="fa-solid fa-address-card"></i> Filozoflar
-                        </button>
-                        <button class="sub-btn" data-target="timeline-section">
-                            <i class="fa-solid fa-timeline"></i> Zaman Akışı
-                        </button>
-                    </div>
-                </div>
+                <button class="nav-btn" data-target="collection-section">
+                    <i class="fa-solid fa-box-archive"></i> 
+                    <span>Koleksiyon</span>
+                </button>
             </nav>
 
-            <div class="admin-panel admin-only hidden">
-                <span class="panel-title">YÖNETİM</span>
-                <button class="action-btn create-btn" onclick="openModal('adminModal')">
-                    <i class="fa-solid fa-plus"></i> Yeni Kart Ekle
-                </button>
+            <div class="user-quick-card">
+                <div class="user-avatar-wrapper">
+                    <img src="https://ui-avatars.com/api/?background=1DB954&color=fff" id="sidebarAvatar" alt="Avatar">
+                </div>
+                <div class="user-meta">
+                    <span class="u-name" id="topUsername">Yükleniyor...</span>
+                    <span class="u-rank" id="topRank">Gezgin</span>
+                </div>
             </div>
         </aside>
 
-        <main class="main-wrapper">
-            
-            <header class="top-header">
-                <div class="search-wrapper">
+        <main class="main-viewport">
+            <header class="glass-header">
+                <div class="search-bar">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Bir düşünce, filozof veya akım ara...">
+                    <input type="text" placeholder="Fikirlerde yolculuğa çık...">
                 </div>
-
-                <div class="profile-section">
-                    <button class="notification-btn"><i class="fa-regular fa-bell"></i></button>
-                    
-                    <div class="profile-trigger" id="profileTrigger">
-                        <img src="https://ui-avatars.com/api/?name=User&background=1DB954&color=fff" id="topAvatar" alt="Profil">
-                        <div class="profile-texts">
-                            <span class="profile-name" id="topUsername">...</span>
-                            <span class="profile-badge" id="topRank">Epistemon</span> </div>
-                        <i class="fa-solid fa-chevron-down profile-arrow"></i>
+                <div class="header-tools">
+                    <div class="stat-badge">
+                        <i class="fa-solid fa-fire"></i>
+                        <span id="headerPoints">0</span>
                     </div>
-
-                    <div class="profile-menu hidden" id="profileMenu">
-                        <div class="menu-header"><strong>Hesabım</strong></div>
-                        <hr>
-                        <button class="menu-item"><i class="fa-regular fa-user"></i> Profili Görüntüle</button>
-                        <button class="menu-item"><i class="fa-solid fa-gear"></i> Ayarlar</button>
-                        <hr>
-                        <button class="menu-item text-danger" id="logoutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış Yap</button>
-                    </div>
+                    <button class="action-icon-btn admin-only hidden" onclick="openModal('adminModal')">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <button class="icon-btn logout-btn" id="logoutBtn">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
                 </div>
             </header>
 
-            <div class="content-area">
+            <section id="home-section" class="page-section">
+                <div class="welcome-hero">
+                    <h1>Hoş geldin, <span id="heroName">Gezgin</span></h1>
+                    <p>Felsefe taşını bulmaya hazır mısın?</p>
+                </div>
                 
-                <section id="home-section" class="page-section active">
-                    <div class="welcome-hero">
-                        <div class="hero-content">
-                            <h1>Selam, <span class="highlight-text" id="heroName">Gezgin</span></h1>
-                            <p>Antik Yunan'ın bilgeliği seni çağırıyor. Bugün zihnini neyle besleyeceksin?</p>
-                        </div>
-                        <i class="fa-solid fa-book-journal-whills hero-icon"></i>
+                <div class="section-container">
+                    <div class="section-header">
+                        <h2>Popüler Filozoflar</h2>
                     </div>
-                    
+                    <div class="phi-grid" id="phiGrid">
+                        </div>
+                </div>
+            </section>
 
-<div class="leaderboard-container">
-    <div class="section-heading">
-        <h3><i class="fa-solid fa-trophy" style="color: var(--yellow);"></i> En Bilge Gezginler</h3>
-        <p>Arena'nın en yüksek puanlı ilk 10 ismi</p>
-    </div>
-    <div class="leaderboard-card">
-        <table class="leaderboard-table">
-            <thead>
-                <tr>
-                    <th>Sıra</th>
-                    <th>Gezgin</th>
-                    <th>Puan</th>
-                </tr>
-            </thead>
-            <tbody id="leaderboardBody">
-                <tr><td colspan="3">Yükleniyor...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-                    <div class="stats-row">
-                        <div class="stat-box">
-                            <i class="fa-solid fa-fire text-orange"></i>
-                            <div class="stat-info">
-                                <span class="stat-value">0</span>
-                                <span class="stat-label">Günlük Seri</span>
-                            </div>
-                        </div>
-                        <div class="stat-box">
-                            <i class="fa-solid fa-bolt text-yellow"></i>
-                            <div class="stat-info">
-                                <span class="stat-value">0</span>
-                                <span class="stat-label">Arena Puanı</span>
-                            </div>
-                        </div>
-                        <div class="stat-box">
-                            <i class="fa-solid fa-scroll text-green"></i>
-                            <div class="stat-info">
-                                <span class="stat-value">0</span>
-                                <span class="stat-label">Okunan Kart</span>
-                            </div>
-                        </div>
+            <section id="arena-section" class="page-section hidden">
+                <div class="arena-container">
+                    <div id="arena-lobby" class="arena-card">
+                        <i class="fa-solid fa-hand-fist arena-icon"></i>
+                        <h2>Zihinsel Arena</h2>
+                        <p>Diğer gezginlerle fikir düellosuna gir, bilgeliğini kanıtla!</p>
+                        <button class="action-btn" id="findMatchBtn">Düello Ara</button>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <section id="cards-section" class="page-section hidden">
-                    <div class="section-heading">
-                        <h2>Bilgelik Arşivi</h2>
-                        <p>Geçmişten günümüze uzanan düşünce mimarları.</p>
+            <section id="collection-section" class="page-section hidden">
+                <div class="section-title">
+                    <h2>Bilgelik Çantan</h2>
+                    <p>Keşfettiğin filozoflar ve kazandığın kartlar burada listelenir.</p>
+                </div>
+                <div class="phi-grid" id="collectionGrid">
                     </div>
-                    <div class="cards-grid" id="phiGrid">
-                        </div>
-                </section>
-
-                <section id="timeline-section" class="page-section hidden">
-                    <div class="section-heading">
-                        <h2>Zamanın Ötesinde</h2>
-                        <p>Felsefenin tarihsel kronolojisi.</p>
-                    </div>
-                    <div class="timeline-wrapper" id="timelineWrapper">
-                        </div>
-                </section>
-
-
-
-        <section id="arena-section" class="page-section hidden">
-    <div class="arena-container">
-        
-        <div id="arena-lobby" class="arena-modes-grid">
-            
-            <div class="arena-card">
-                <i class="fa-solid fa-khanda arena-hero-icon"></i>
-                <h2>Zihinsel Düello</h2>
-                <p>Diğer gezginlerle bilgi yarışına gir, rütbeni yükselt.</p>
-                <div class="arena-stats-mini">
-                    <span><i class="fa-solid fa-trophy"></i> Puan: <b id="arenaPoints">0</b></span>
-                </div>
-                <button class="action-btn start-match-btn" id="findMatchBtn">
-                    <i class="fa-solid fa-bolt"></i> Düello Ara
-                </button>
-            </div>
-
-            <div class="arena-card">
-                <i class="fa-solid fa-comment-dots arena-hero-icon" style="color: var(--yellow); filter: drop-shadow(0 0 15px rgba(255, 204, 0, 0.4));"></i>
-                <h2>Kimin Sözü?</h2>
-                <p>Filozofları sözlerinden tanı, serini uzat ve XP'leri topla!</p>
-                <div class="arena-stats-mini">
-                    <span style="visibility: hidden;"><i class="fa-solid fa-trophy"></i> Puan</span> </div>
-                <button class="action-btn" onclick="startQuoteGame()" style="background: var(--yellow); color: #000;">
-                    <i class="fa-solid fa-play"></i> Modu Başlat
-                </button>
-            </div>
-
-        </div>
-
-        <div id="arena-battle" class="arena-card hidden">
-            <div class="battle-header">
-                <div class="timer-bar"><div id="timerProgress"></div></div>
-                <div class="battle-meta">
-                    <span id="questionCount">Soru 1/5</span>
-                    <span id="timeLeft">15s</span>
-                </div>
-            </div>
-            <h3 id="questionText">Soru yükleniyor...</h3>
-            <div class="options-grid" id="optionsGrid"></div>
-        </div>
-
-        <div id="arena-result" class="arena-card hidden">
-            <i class="fa-solid fa-medal result-icon"></i>
-            <h2 id="resultTitle">Tebrikler!</h2>
-            <p id="resultMsg">Maçı kazandın.</p>
-            <button class="btn-save" onclick="resetArena()">Lobiye Dön</button>
-        </div>
-
-        <div id="quote-game-arena" class="arena-card hidden">
-            </div>
-
-    </div>
-</section>
-        
-
-        <div id="arena-battle" class="arena-card hidden">
-            <div class="battle-header">
-                <div class="timer-bar"><div id="timerProgress"></div></div>
-                <div class="battle-meta">
-                    <span id="questionCount">Soru 1/5</span>
-                    <span id="timeLeft">15s</span>
-                </div>
-            </div>
-            
-            <h3 id="questionText">Soru yükleniyor...</h3>
-            
-            <div class="options-grid" id="optionsGrid">
-                </div>
-        </div>
-
-        <div id="arena-result" class="arena-card hidden">
-            <i class="fa-solid fa-medal result-icon"></i>
-            <h2 id="resultTitle">Tebrikler!</h2>
-            <p id="resultMsg">Maçı kazandın ve +20 puan kazandın.</p>
-            <button class="btn-save" onclick="resetArena()">Lobiye Dön</button>
-        </div>
+            </section>
+        </main>
     </div>
 
-
-    
-</section>
-
-        <nav class="mobile-dock">
-            <button class="dock-item active" data-target="home-section"><i class="fa-solid fa-house"></i></button>
-            <button class="dock-item" data-target="cards-section"><i class="fa-solid fa-book-open"></i></button>
-            <button class="dock-item" data-target="arena-section"><i class="fa-solid fa-shield-halved"></i></button>
-            <button class="dock-item" id="mobileProfileBtn"><i class="fa-regular fa-user"></i></button>
-        </nav>
+    <div class="modal-overlay" id="readModal">
+        <div class="modal-container read-container">
+            <button class="close-btn float-close" onclick="closeModal('readModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="readContent" class="modal-body">
+                </div>
+        </div>
     </div>
 
     <div class="modal-overlay" id="adminModal">
         <div class="modal-container">
             <div class="modal-header">
-                <h3>Yeni Filozof Ekle</h3>
-                <button class="close-btn" onclick="closeModal('adminModal')"><i class="fa-solid fa-xmark"></i></button>
+                <h2>Yeni Filozof Ekle</h2>
+                <button class="close-btn" onclick="closeModal('adminModal')">&times;</button>
             </div>
-            <form id="addPhiForm" class="modern-form">
-                <input type="text" id="phiName" placeholder="Filozof Adı (Örn: Sokrates)" required>
-                <div class="input-row">
-                    <input type="text" id="phiEra" placeholder="Dönem (Örn: MÖ 470)" required>
-                    <input type="number" id="phiYear" placeholder="Sıralama Yılı (-470)" required>
-                </div>
-                
-                <div class="input-group">
-    <label class="field-label">Kart Nadirliği</label>
-    <select id="phiRarity" class="modern-select">
-        <option value="common">🟢 Yaygın (Common)</option>
-        <option value="rare">🔵 Nadir (Rare)</option>
-        <option value="legendary">🟡 Efsanevi (Legendary)</option>
-    </select>
-</div>
-                <input type="url" id="phiImg" placeholder="Görsel URL (İsteğe Bağlı)">
-                <textarea id="phiThought" placeholder="Temel Düşüncesi ve Felsefesi..." rows="3" required></textarea>
+            <form id="addPhiForm" class="admin-form">
+                <input type="text" id="phiName" placeholder="Filozof Adı" required>
+                <input type="text" id="phiEra" placeholder="Dönem (Örn: Antik Yunan)" required>
+                <input type="number" id="phiYear" placeholder="Sıralama Yılı" required>
+                <select id="phiRarity" class="modern-select">
+                    <option value="common">🟢 Yaygın (Common)</option>
+                    <option value="rare">🔵 Nadir (Rare)</option>
+                    <option value="legendary">🟡 Efsanevi (Legendary)</option>
+                </select>
+                <input type="url" id="phiImg" placeholder="Görsel URL">
+                <textarea id="phiThought" placeholder="Temel Felsefesi..." rows="3" required></textarea>
                 <textarea id="phiQuote" placeholder="Meşhur Sözü..." rows="2"></textarea>
                 <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeModal('adminModal')">Vazgeç</button>
-                    <button type="submit" class="btn-save">Sisteme Kaydet</button>
+                    <button type="submit" class="btn-save">Kaydet</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="readModal">
-        <div class="modal-container read-container">
-            <button class="close-btn float-close" onclick="closeModal('readModal')"><i class="fa-solid fa-xmark"></i></button>
-            <div id="readContent" class="read-content-body">
-                </div>
         </div>
     </div>
 
