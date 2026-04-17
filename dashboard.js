@@ -75,6 +75,9 @@ export function showToast(type = "info", title = "", message = "", duration = 40
 // ============================================================
 // B. AUTH & BAŞLANGIÇ
 // ============================================================
+// ============================================================
+// B. AUTH & BAŞLANGIÇ (TAMİR EDİLDİ)
+// ============================================================
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = "index.html";
@@ -82,36 +85,49 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     try {
+        console.log("Giriş başarılı, veriler kontrol ediliyor...");
         const userRef  = doc(db, "users", user.uid);
+        
+        // Önce verinin varlığını bir kez kontrol et
         const userSnap = await getDoc(userRef);
 
         if (!userSnap.exists()) {
-            showToast("error", "Kullanıcı Bulunamadı", "Hesap verisi eksik olabilir.");
+            console.error("Firestore'da döküman yok! UID:", user.uid);
+            showToast("error", "Kullanıcı Bulunamadı", "Veritabanında profiliniz eksik.");
             return;
         }
 
+        // Veriyi al ve global state'e yaz
         currentUserData = { ...userSnap.data(), uid: user.uid };
+        console.log("Veri yüklendi:", currentUserData.username);
 
-        // Gerçek zamanlı kullanıcı dinleyicisi (puan/rütbe anlık güncellenir)
+        // --- SİSTEMLERİ SIRAYLA BAŞLAT ---
+        // Dinleyiciyi hemen başlatıyoruz ki değişimleri yakalasın
         initUserListener(user.uid);
 
+        // Arayüzü hazırla
         setupUI();
         setupNavigation();
         setupSearch();
+        
+        // Diğer verileri çek
         initDataListeners();
         initLeaderboard();
 
-        // Admin ise kullanıcı listesini dinle
+        // Admin Paneli Görünürlüğü (Senin role: "admin" verine göre)
         if (currentUserData.role === "admin") {
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
             initAdminUsersListener();
         }
 
+        // Yükleniyor durumunu bitir (CSS'te body.loading varsa)
+        document.body.classList.remove('loading');
+
     } catch (err) {
-        console.error("Veri çekme hatası:", err);
-        showToast("error", "Bağlantı Hatası", "Veriler yüklenemedi. Lütfen sayfayı yenile.");
+        console.error("Kritik Başlangıç Hatası:", err);
+        showToast("error", "Bağlantı Hatası", "Firebase verilerine erişilemiyor.");
     }
 });
-
 
 // ============================================================
 // C. GERÇEK ZAMANLI KULLANICI DİNLEYİCİSİ
